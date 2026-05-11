@@ -1,0 +1,23 @@
+# Environment
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+.expo/
+
+# OS
+.DS_Store
+
+# Build artifacts
+dist/
+build/
+
+# Logs
+logs/

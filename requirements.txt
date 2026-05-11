@@ -1,0 +1,51 @@
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+
+# Database
+sqlalchemy[asyncio]==2.0.35
+asyncpg
+alembic==1.13.2
+
+# Auth & security
+python-jose[cryptography]
+bcrypt
+python-multipart
+cryptography
+
+# AI / LLM
+anthropic==0.100.0
+openai
+pyyaml
+
+# Data & indicators
+pandas
+pandas-ta
+
+# Exchanges
+ccxt
+
+# Caching
+redis
+
+# Scheduling
+apscheduler
+
+# Validation
+pydantic
+pydantic-settings
+email-validator
+
+# HTTP clients
+httpx
+aiohttp
+
+# Utilities
+python-dotenv
+orjson
+
+
+# Testing
+pytest
+pytest-asyncio
+httpx
