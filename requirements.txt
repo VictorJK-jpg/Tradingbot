@@ -5,6 +5,7 @@ uvicorn[standard]==0.30.0
 # Database
 sqlalchemy[asyncio]==2.0.35
 asyncpg
+aiosqlite
 alembic==1.13.2
 
 # Auth & security
