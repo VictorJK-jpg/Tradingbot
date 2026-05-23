@@ -1,16 +1,21 @@
-"""Technical indicators powered by pandas-ta.
+"""Technical indicators powered by the `ta` library.
 
-Wraps pandas-ta to provide a clean interface for the strategy engine.
+Wraps the `ta` (Technical Analysis) library to provide a clean interface
+for the strategy engine.  Works on Python 3.8+ (unlike pandas-ta which
+requires 3.12+).
+
 All functions expect a pandas DataFrame with OHLC columns.
 """
 
 import pandas as pd
-import pandas_ta as ta
+from ta.momentum import RSIIndicator
+from ta.trend import MACD, EMAIndicator, SMAIndicator
+from ta.volatility import BollingerBands, AverageTrueRange
 
 
 def add_rsi(df: pd.DataFrame, length: int = 14, column: str = "close") -> pd.DataFrame:
     """Add RSI column to DataFrame."""
-    df["rsi"] = ta.rsi(df[column], length=length)
+    df["rsi"] = RSIIndicator(close=df[column], window=length).rsi()
     return df
 
 
@@ -22,9 +27,10 @@ def add_macd(
     column: str = "close",
 ) -> pd.DataFrame:
     """Add MACD, MACD signal, and MACD histogram columns."""
-    macd = ta.macd(df[column], fast=fast, slow=slow, signal=signal)
-    if macd is not None:
-        df = pd.concat([df, macd], axis=1)
+    macd = MACD(close=df[column], window_fast=fast, window_slow=slow, window_sign=signal)
+    df["MACD_12_26_9"] = macd.macd()
+    df["MACDs_12_26_9"] = macd.macd_signal()
+    df["MACDh_12_26_9"] = macd.macd_diff()
     return df
 
 
@@ -34,35 +40,38 @@ def add_bollinger_bands(
     std: float = 2.0,
     column: str = "close",
 ) -> pd.DataFrame:
-    """Add Bollinger Bands (lower, mid, upper, bandwidth, percent)."""
-    bbands = ta.bbands(df[column], length=length, std=std)
-    if bbands is not None:
-        df = pd.concat([df, bbands], axis=1)
+    """Add Bollinger Bands (lower, mid, upper)."""
+    bb = BollingerBands(close=df[column], window=length, window_dev=std)
+    df["BBL_20_2.0"] = bb.bollinger_lband()
+    df["BBM_20_2.0"] = bb.bollinger_mavg()
+    df["BBU_20_2.0"] = bb.bollinger_hband()
     return df
 
 
 def add_ema(df: pd.DataFrame, length: int = 20, column: str = "close") -> pd.DataFrame:
     """Add Exponential Moving Average."""
-    df[f"ema_{length}"] = ta.ema(df[column], length=length)
+    df[f"ema_{length}"] = EMAIndicator(close=df[column], window=length).ema_indicator()
     return df
 
 
 def add_sma(df: pd.DataFrame, length: int = 20, column: str = "close") -> pd.DataFrame:
     """Add Simple Moving Average."""
-    df[f"sma_{length}"] = ta.sma(df[column], length=length)
+    df[f"sma_{length}"] = SMAIndicator(close=df[column], window=length).sma_indicator()
     return df
 
 
 def add_atr(df: pd.DataFrame, length: int = 14) -> pd.DataFrame:
     """Add Average True Range (requires high, low, close)."""
-    df["atr"] = ta.atr(df["high"], df["low"], df["close"], length=length)
+    df["atr"] = AverageTrueRange(
+        high=df["high"], low=df["low"], close=df["close"], window=length
+    ).average_true_range()
     return df
 
 
 def add_volume_sma(df: pd.DataFrame, length: int = 20) -> pd.DataFrame:
     """Add volume SMA (requires 'volume' column)."""
     if "volume" in df.columns:
-        df[f"volume_sma_{length}"] = ta.sma(df["volume"], length=length)
+        df[f"volume_sma_{length}"] = SMAIndicator(close=df["volume"], window=length).sma_indicator()
     return df
 
 
