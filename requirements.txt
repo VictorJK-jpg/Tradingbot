@@ -21,7 +21,7 @@ pyyaml
 
 # Data & indicators
 pandas
-pandas-ta
+ta
 
 # Exchanges
 ccxt
