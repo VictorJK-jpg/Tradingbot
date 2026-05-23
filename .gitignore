@@ -19,5 +19,8 @@ node_modules/
 dist/
 build/
 
+# SQLite
+*.db
+
 # Logs
 logs/

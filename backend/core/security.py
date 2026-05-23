@@ -88,14 +88,16 @@ async def get_current_user(
 # ---------------------------------------------------------------------------
 # Fernet encryption for exchange API keys
 # ---------------------------------------------------------------------------
-_fernet = Fernet(settings.ENCRYPTION_KEY.encode())
+
+def _get_fernet() -> Fernet:
+    return Fernet(settings.ENCRYPTION_KEY.encode())
 
 
 def encrypt_api_key(key: str) -> str:
     """Encrypt an exchange API key before storing in DB."""
-    return _fernet.encrypt(key.encode()).decode()
+    return _get_fernet().encrypt(key.encode()).decode()
 
 
 def decrypt_api_key(token: str) -> str:
     """Decrypt an exchange API key when needed for CCXT."""
-    return _fernet.decrypt(token.encode()).decode()
+    return _get_fernet().decrypt(token.encode()).decode()
