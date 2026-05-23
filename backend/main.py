@@ -14,15 +14,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.core.config import settings
 from backend.core.database import engine, Base
 from backend.api import auth, users, onboarding, exchange, portfolio, ai
+from backend.api import market, strategies, trading
+from backend.services.scheduler import start_scheduler, stop_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: create tables. Shutdown: dispose engine."""
+    """Startup: create tables + scheduler. Shutdown: stop scheduler + dispose engine."""
     async with engine.begin() as conn:
-        # In production, use Alembic migrations instead.
         await conn.run_sync(Base.metadata.create_all)
+    start_scheduler()
     yield
+    stop_scheduler()
     await engine.dispose()
 
 
@@ -51,6 +54,9 @@ app.include_router(onboarding.router, prefix="/api/v1/onboarding", tags=["Onboar
 app.include_router(exchange.router, prefix="/api/v1/exchange", tags=["Exchange"])
 app.include_router(portfolio.router, prefix="/api/v1/portfolio", tags=["Portfolio"])
 app.include_router(ai.router, prefix="/api/v1/ai", tags=["AI"])
+app.include_router(market.router, prefix="/api/v1/market", tags=["Market"])
+app.include_router(strategies.router, prefix="/api/v1/strategies", tags=["Strategies"])
+app.include_router(trading.router, prefix="/api/v1/trading", tags=["Trading"])
 
 
 @app.get("/health", tags=["Health"])
