@@ -121,3 +121,78 @@ class SkillsEngine:
             if chunk:
                 parts.append(f"## CATEGORY: {category.upper().replace('_', ' ')}\n\n{chunk}")
         return "\n\n===\n\n".join(parts)
+
+    # ------------------------------------------------------------------
+    # Metadata and matching
+    # ------------------------------------------------------------------
+    @staticmethod
+    def get_available_skills() -> list[dict]:
+        """Return metadata for all skills without loading content.
+
+        Returns: list of {"category": str, "name": str, "title": str,
+                         "description": str, "tags": list[str]}
+        """
+        results: list[dict] = []
+        for category in sorted(_VALID_CATEGORIES):
+            folder = _SKILLS_BASE / category
+            if not folder.exists():
+                continue
+            for skill_dir in sorted(folder.iterdir()):
+                if not skill_dir.is_dir():
+                    continue
+                skill_path = skill_dir / "SKILL.md"
+                if not skill_path.exists():
+                    continue
+                meta, _ = _parse_skill(skill_path)
+                results.append({
+                    "category": category,
+                    "name": skill_dir.name,
+                    "title": meta.get("title", skill_dir.name.replace("_", " ").title()),
+                    "description": meta.get("description", ""),
+                    "tags": meta.get("tags", []),
+                })
+        return results
+
+    @staticmethod
+    def match_skills(user_message: str) -> str:
+        """Intelligently match user message to relevant skills.
+
+        Scans YAML frontmatter only (tags, title, description).
+        Scores by keyword matches (tags weighted 2x).
+        Returns top 3 skills max as concatenated content.
+        Returns empty string if no matches.
+        """
+        if not user_message.strip():
+            return ""
+
+        user_words = set(user_message.lower().split())
+        scored: list[tuple[float, dict]] = []
+
+        for skill in SkillsEngine.get_available_skills():
+            score = 0.0
+            title = skill["title"].lower()
+            desc = skill["description"].lower()
+            tags = [t.lower() for t in skill["tags"]]
+
+            for word in user_words:
+                if word in title:
+                    score += 1
+                if word in desc:
+                    score += 0.5
+                if any(word in tag for tag in tags):
+                    score += 2
+
+            if score > 0:
+                scored.append((score, skill))
+
+        if not scored:
+            return ""
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        top_skills = scored[:3]
+
+        selections = [
+            {"category": s[1]["category"], "name": s[1]["name"]}
+            for s in top_skills
+        ]
+        return SkillsEngine.load_multi(selections)
