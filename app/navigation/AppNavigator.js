@@ -9,53 +9,60 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 
 // Onboarding
-import OnboardingNavigator from "../navigation/OnboardingNavigator";
+import OnboardingNavigator from "./OnboardingNavigator";
 
-// Main tabs
+// Main screens
+import HomeScreen from "../screens/HomeScreen";
+import AIChatScreen from "../screens/AIChatScreen";
 import PortfolioScreen from "../screens/PortfolioScreen";
-import ExchangeScreen from "../screens/ExchangeScreen";
+import MarketsScreen from "../screens/MarketsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Tab icon component
+function TabIcon({ name, focused }) {
+  const icons = {
+    Home: "🏠",
+    Chat: "🤖",
+    Portfolio: "📊",
+    Markets: "📈",
+    Settings: "⚙️",
+  };
+  return (
+    <View className="items-center">
+      <Text className="text-xl">{icons[name]}</Text>
+      <Text className={`text-xs mt-1 ${focused ? "text-brand-400" : "text-dark-600"}`}>
+        {name}
+      </Text>
+    </View>
+  );
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarStyle: { backgroundColor: "#0f172a", borderTopColor: "#1e293b" },
+        tabBarStyle: {
+          backgroundColor: "#0f172a",
+          borderTopColor: "#1e293b",
+          height: 80,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarShowLabel: false,
         tabBarActiveTintColor: "#4ade80",
         tabBarInactiveTintColor: "#64748b",
-      }}
+        tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
+      })}
     >
-      <Tab.Screen
-        name="Portfolio"
-        component={PortfolioScreen}
-        options={{
-          tabBarIcon: () => (
-            <View className="w-5 h-5 bg-brand-500 rounded-full" />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Exchange"
-        component={ExchangeScreen}
-        options={{
-          tabBarIcon: () => (
-            <View className="w-5 h-5 bg-dark-600 rounded-full" />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarIcon: () => (
-            <View className="w-5 h-5 bg-dark-600 rounded-full" />
-          ),
-        }}
-      />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Chat" component={AIChatScreen} />
+      <Tab.Screen name="Portfolio" component={PortfolioScreen} />
+      <Tab.Screen name="Markets" component={MarketsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
@@ -76,13 +83,29 @@ export default function AppNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!tokens ? (
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen 
+            name="Login" 
+            component={LoginScreen}
+            options={{ animation: "fade" }}
+          />
+          <Stack.Screen 
+            name="Register" 
+            component={RegisterScreen}
+            options={{ animation: "fade" }}
+          />
         </>
       ) : (
         <>
-          <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
-          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen 
+            name="Onboarding" 
+            component={OnboardingNavigator}
+            options={{ animation: "slide_from_right" }}
+          />
+          <Stack.Screen 
+            name="Main" 
+            component={MainTabs}
+            options={{ animation: "fade" }}
+          />
         </>
       )}
     </Stack.Navigator>
