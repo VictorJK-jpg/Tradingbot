@@ -1,8 +1,16 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import api from "../../services/api";
+
+const COLORS = {
+  white: "#F9F9F7",
+  black: "#111111",
+  gray: "#E5E5E0",
+  red: "#CC0000",
+  midGray: "#737373",
+};
 
 const STRATEGIES = [
   { id: "dca", label: "DCA (Dollar Cost Average)", desc: "Regular fixed-amount purchases" },
@@ -37,49 +45,66 @@ export default function OnboardingStrategyScreen() {
   };
 
   return (
-    <View className="flex-1 bg-dark-900 px-6 pt-12">
-      <Text className="text-brand-400 text-sm font-semibold mb-2">Step 8 of 9</Text>
-      <Text className="text-white text-2xl font-bold mb-2">Strategy Selection</Text>
-      <Text className="text-dark-600 mb-6">
+    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
+      <View style={{ paddingTop: 60, paddingHorizontal: 16, borderBottomWidth: 4, borderBottomColor: COLORS.black, paddingBottom: 12 }}>
+        <Text style={{ color: COLORS.midGray, fontSize: 11, textTransform: "uppercase" }}>Step 8 of 9</Text>
+        <Text style={{ color: COLORS.black, fontSize: 28, fontWeight: "bold", fontFamily: "Times New Roman" }}>STRATEGY SELECTION</Text>
+      </View>
+      
+      <Text style={{ color: COLORS.midGray, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: COLORS.gray }}>
         Pick strategies the AI can use. Advisory-only is the default.
       </Text>
 
-      {STRATEGIES.map((s) => (
-        <TouchableOpacity
-          key={s.id}
-          onPress={() => toggle(s.id)}
-          className={`flex-row items-center justify-between px-4 py-3 rounded-xl mb-2 border ${
-            selected.includes(s.id)
-              ? "bg-brand-500/20 border-brand-500"
-              : "bg-dark-800 border-dark-700"
-          }`}
-        >
-          <View>
-            <Text className="text-white font-semibold">{s.label}</Text>
-            <Text className="text-dark-600 text-sm">{s.desc}</Text>
-          </View>
-          <View
-            className={`w-6 h-6 rounded-full border items-center justify-center ${
-              selected.includes(s.id) ? "bg-brand-500 border-brand-500" : "border-dark-600"
-            }`}
+      <ScrollView style={{ flex: 1, paddingHorizontal: 16 }}>
+        {STRATEGIES.map((s) => (
+          <TouchableOpacity
+            key={s.id}
+            onPress={() => toggle(s.id)}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 16,
+              marginTop: 12,
+              borderWidth: 1,
+              borderColor: selected.includes(s.id) ? COLORS.black : COLORS.gray,
+              backgroundColor: selected.includes(s.id) ? COLORS.black : COLORS.white,
+            }}
           >
-            {selected.includes(s.id) && <Text className="text-white text-xs">✓</Text>}
-          </View>
+            <View>
+              <Text style={{ color: selected.includes(s.id) ? COLORS.white : COLORS.black, fontWeight: "bold", fontSize: 14, textTransform: "uppercase" }}>{s.label}</Text>
+              <Text style={{ color: selected.includes(s.id) ? COLORS.gray : COLORS.midGray, fontSize: 12, marginTop: 4 }}>{s.desc}</Text>
+            </View>
+            <View style={{
+              width: 24,
+              height: 24,
+              borderWidth: 2,
+              borderColor: selected.includes(s.id) ? COLORS.white : COLORS.black,
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              {selected.includes(s.id) && <Text style={{ color: COLORS.white, fontSize: 14, fontWeight: "bold" }}>✓</Text>}
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      
+      <View style={{ padding: 16, borderTopWidth: 4, borderTopColor: COLORS.black }}>
+        <TouchableOpacity
+          onPress={handleNext}
+          disabled={loading || selected.length === 0}
+          style={{
+            backgroundColor: selected.length > 0 && !loading ? COLORS.black : COLORS.gray,
+            paddingVertical: 16,
+            borderWidth: 1,
+            borderColor: selected.length > 0 && !loading ? COLORS.black : COLORS.midGray,
+          }}
+        >
+          <Text style={{ color: COLORS.white, textAlign: "center", fontWeight: "bold", fontSize: 14, textTransform: "uppercase", letterSpacing: 2 }}>
+            {loading ? "Saving..." : "Next"}
+          </Text>
         </TouchableOpacity>
-      ))}
-
-      <View className="flex-1" />
-      <TouchableOpacity
-        onPress={handleNext}
-        disabled={loading || selected.length === 0}
-        className={`py-4 rounded-xl items-center mb-6 ${
-          selected.length > 0 && !loading ? "bg-brand-500" : "bg-dark-700"
-        }`}
-      >
-        <Text className="text-white font-semibold text-lg">
-          {loading ? "Saving..." : "Next"}
-        </Text>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 }

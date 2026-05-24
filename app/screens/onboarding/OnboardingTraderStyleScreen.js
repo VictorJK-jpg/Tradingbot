@@ -1,8 +1,16 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import api from "../../services/api";
+
+const COLORS = {
+  white: "#F9F9F7",
+  black: "#111111",
+  gray: "#E5E5E0",
+  red: "#CC0000",
+  midGray: "#737373",
+};
 
 const STYLES = [
   { id: "scalper", label: "Scalper", desc: "Minutes to hours" },
@@ -13,10 +21,10 @@ const STYLES = [
 ];
 
 const EXPERIENCE = [
-  { id: "beginner", label: "Beginner" },
-  { id: "intermediate", label: "Intermediate" },
-  { id: "advanced", label: "Advanced" },
-  { id: "expert", label: "Expert" },
+  { id: "beginner", label: "BEGINNER" },
+  { id: "intermediate", label: "INTERMEDIATE" },
+  { id: "advanced", label: "ADVANCED" },
+  { id: "expert", label: "EXPERT" },
 ];
 
 export default function OnboardingTraderStyleScreen() {
@@ -39,62 +47,76 @@ export default function OnboardingTraderStyleScreen() {
   };
 
   return (
-    <View className="flex-1 bg-dark-900 px-6 pt-12">
-      <Text className="text-brand-400 text-sm font-semibold mb-2">Step 2 of 9</Text>
-      <Text className="text-white text-2xl font-bold mb-2">Trading Style</Text>
-      <Text className="text-dark-600 mb-6">How do you trade?</Text>
-
-      <Text className="text-white font-semibold mb-3">Style</Text>
-      {STYLES.map((s) => (
-        <TouchableOpacity
-          key={s.id}
-          onPress={() => setStyle(s.id)}
-          className={`flex-row items-center justify-between px-4 py-3 rounded-xl mb-2 border ${
-            style === s.id
-              ? "bg-brand-500/20 border-brand-500"
-              : "bg-dark-800 border-dark-700"
-          }`}
-        >
-          <Text className="text-white font-semibold">{s.label}</Text>
-          <Text className="text-dark-600 text-sm">{s.desc}</Text>
-        </TouchableOpacity>
-      ))}
-
-      <Text className="text-white font-semibold mb-3 mt-4">Experience</Text>
-      <View className="flex-row flex-wrap gap-2">
-        {EXPERIENCE.map((e) => (
+    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
+      <View style={{ paddingTop: 60, paddingHorizontal: 16, borderBottomWidth: 4, borderBottomColor: COLORS.black, paddingBottom: 12 }}>
+        <Text style={{ color: COLORS.midGray, fontSize: 11, textTransform: "uppercase" }}>Step 2 of 9</Text>
+        <Text style={{ color: COLORS.black, fontSize: 28, fontWeight: "bold", fontFamily: "Times New Roman" }}>TRADING STYLE</Text>
+      </View>
+      
+      <View style={{ paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: COLORS.gray, paddingBottom: 16 }}>
+        <Text style={{ color: COLORS.black, fontSize: 14, fontWeight: "bold", textTransform: "uppercase", marginBottom: 12 }}>Style</Text>
+        {STYLES.map((s) => (
           <TouchableOpacity
-            key={e.id}
-            onPress={() => setExperience(e.id)}
-            className={`px-4 py-2 rounded-xl border ${
-              experience === e.id
-                ? "bg-brand-500 border-brand-500"
-                : "bg-dark-800 border-dark-700"
-            }`}
+            key={s.id}
+            onPress={() => setStyle(s.id)}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 14,
+              marginBottom: 8,
+              borderWidth: 1,
+              borderColor: style === s.id ? COLORS.black : COLORS.gray,
+              backgroundColor: style === s.id ? COLORS.black : COLORS.white,
+            }}
           >
-            <Text
-              className={`font-semibold ${
-                experience === e.id ? "text-white" : "text-dark-600"
-              }`}
-            >
-              {e.label}
-            </Text>
+            <Text style={{ color: style === s.id ? COLORS.white : COLORS.black, fontWeight: "bold", fontSize: 13 }}>{s.label}</Text>
+            <Text style={{ color: style === s.id ? COLORS.gray : COLORS.midGray, fontSize: 11 }}>{s.desc}</Text>
           </TouchableOpacity>
         ))}
       </View>
-
-      <View className="flex-1" />
-      <TouchableOpacity
-        onPress={handleNext}
-        disabled={!style || !experience || loading}
-        className={`py-4 rounded-xl items-center mb-6 ${
-          style && experience && !loading ? "bg-brand-500" : "bg-dark-700"
-        }`}
-      >
-        <Text className="text-white font-semibold text-lg">
-          {loading ? "Saving..." : "Next"}
-        </Text>
-      </TouchableOpacity>
+      
+      <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+        <Text style={{ color: COLORS.black, fontSize: 14, fontWeight: "bold", textTransform: "uppercase", marginBottom: 12 }}>Experience</Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 0 }}>
+          {EXPERIENCE.map((e) => (
+            <TouchableOpacity
+              key={e.id}
+              onPress={() => setExperience(e.id)}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                borderWidth: 1,
+                borderColor: experience === e.id ? COLORS.black : COLORS.gray,
+                backgroundColor: experience === e.id ? COLORS.black : COLORS.white,
+                marginRight: 8,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={{ color: experience === e.id ? COLORS.white : COLORS.black, fontWeight: "bold", fontSize: 11 }}>{e.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+      
+      <View style={{ flex: 1 }} />
+      
+      <View style={{ padding: 16, borderTopWidth: 4, borderTopColor: COLORS.black }}>
+        <TouchableOpacity
+          onPress={handleNext}
+          disabled={!style || !experience || loading}
+          style={{
+            backgroundColor: style && experience && !loading ? COLORS.black : COLORS.gray,
+            paddingVertical: 16,
+            borderWidth: 1,
+            borderColor: style && experience && !loading ? COLORS.black : COLORS.midGray,
+          }}
+        >
+          <Text style={{ color: COLORS.white, textAlign: "center", fontWeight: "bold", fontSize: 14, textTransform: "uppercase", letterSpacing: 2 }}>
+            {loading ? "SAVING..." : "NEXT"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
