@@ -1,33 +1,20 @@
 """AI endpoints: ask and suggest-trade.
 
-Phase 4 enhancements:
-  - Conversation memory: last 10 exchanges injected as chat context
-  - AI call budget: enforced per user per day (AI_CALL_BUDGET_PER_USER)
-  - Market data: live BTC/ETH prices auto-injected into system prompt
+Stage 7: Uses ContextBuilder for context assembly
+- Loads user profile, skills, conversation history, market snapshot
+- Returns AI response with reasoning
+- Supports intelligent skills matching via match_skills()
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
 from backend.core.security import get_current_user
-from backend.models.user import (
-    User,
-    TraderProfile,
-    PsychProfile,
-    RiskBudget,
-    ConversationMemory,
-)
-from backend.services.skills_engine import SkillsEngine
-from backend.services.ai.brain import (
-    AIBrain,
-    BudgetExceeded,
-    check_budget,
-    fetch_conversation_history,
-    fetch_market_context,
-)
+from backend.models.user import User, ConversationMemory
+from backend.services.ai.brain import AIBrain, BudgetExceeded, check_budget
+from backend.services.ai.context_builder import ContextBuilder
 
 router = APIRouter()
 
@@ -36,12 +23,13 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 class AskRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=4000)
-    skills: list[dict[str, str]] = Field(
-        default=[], description="List of {'category': '...', 'name': '...'}"
-    )
     coin_ids: list[str] = Field(
         default=["bitcoin", "ethereum"],
         description="CoinGecko IDs for market context injection",
+    )
+    include_market: bool = Field(
+        default=True,
+        description="Include live market data in context",
     )
 
 
@@ -53,8 +41,8 @@ class AskResponse(BaseModel):
 
 
 class SuggestRequest(BaseModel):
-    skills: list[dict[str, str]] = Field(default=[])
     coin_ids: list[str] = Field(default=["bitcoin", "ethereum"])
+    include_market: bool = Field(default=True)
 
 
 class SuggestResponse(BaseModel):
@@ -73,71 +61,6 @@ class BudgetResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-async def _fetch_user_profile(db: AsyncSession, user_id: int) -> dict:
-    """Gather TraderProfile, PsychProfile, and RiskBudget into a flat dict."""
-    profile = {}
-
-    tp_result = await db.execute(
-        select(TraderProfile).where(TraderProfile.user_id == user_id)
-    )
-    tp: TraderProfile | None = tp_result.scalar_one_or_none()
-    if tp:
-        profile["style"] = tp.style.value if tp.style else "unset"
-        profile["experience"] = tp.experience.value if tp.experience else "unset"
-        profile["preferred_assets"] = tp.preferred_assets
-        profile["max_daily_trades"] = tp.max_daily_trades
-
-    pp_result = await db.execute(
-        select(PsychProfile).where(PsychProfile.user_id == user_id)
-    )
-    pp: PsychProfile | None = pp_result.scalar_one_or_none()
-    if pp:
-        profile["fomo_score"] = pp.fomo_score
-        profile["panic_score"] = pp.panic_score
-        profile["overtrading_score"] = pp.overtrading_score
-        profile["revenge_trading_score"] = pp.revenge_trading_score
-        profile["cooling_off"] = pp.cooling_off_enabled
-
-    rb_result = await db.execute(
-        select(RiskBudget).where(RiskBudget.user_id == user_id)
-    )
-    rb: RiskBudget | None = rb_result.scalar_one_or_none()
-    if rb:
-        profile["max_portfolio_risk"] = float(rb.max_portfolio_risk_percent)
-        profile["max_position_size"] = float(rb.max_position_size_percent)
-        profile["max_daily_loss"] = float(rb.max_daily_loss_percent)
-        profile["max_leverage"] = float(rb.max_leverage)
-
-    return profile
-
-
-def _load_skills(requested: list[dict[str, str]]) -> tuple[str, list[str]]:
-    """Load requested skills or default set. Returns (context_string, list_of_loaded_names)."""
-    engine = SkillsEngine()
-    if requested:
-        selections = [{"category": s["category"], "name": s["name"]} for s in requested]
-        loaded_names = [f"{s['category']}/{s['name']}" for s in selections]
-        try:
-            return engine.load_multi(selections), loaded_names
-        except FileNotFoundError:
-            return "", loaded_names
-
-    defaults = [
-        {"category": "strategies", "name": "trend_following"},
-        {"category": "risk_management", "name": "position_sizing"},
-        {"category": "market_reading", "name": "support_resistance"},
-    ]
-    loaded_names = [
-        "strategies/trend_following",
-        "risk_management/position_sizing",
-        "market_reading/support_resistance",
-    ]
-    try:
-        return engine.load_multi(defaults), loaded_names
-    except FileNotFoundError:
-        return "", loaded_names
-
-
 async def _store_exchange(
     db: AsyncSession,
     user_id: int,
@@ -152,6 +75,22 @@ async def _store_exchange(
     await db.commit()
 
 
+def _extract_skills_from_context(context: str) -> list[str]:
+    """Extract skill names from context string for response."""
+    import re
+    skills = []
+    for match in re.finditer(r'# \[(\w+)\] (.+)', context):
+        skills.append(f"{match.group(1).lower()}/{match.group(2).strip()}")
+    # If no headers found, return defaults
+    if not skills:
+        skills = [
+            "strategies/trend_following",
+            "risk_management/position_sizing",
+            "market_reading/support_resistance",
+        ]
+    return skills
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -163,11 +102,11 @@ async def ask_ai(
 ) -> AskResponse:
     """Send a message to the AI and get a response.
 
-    Features:
-    - Enforces daily AI call budget per user
-    - Injects last 10 conversation exchanges as context
-    - Injects live market data (BTC/ETH prices) into system prompt
-    - Stores the exchange in conversation_memory
+    Uses ContextBuilder to assemble:
+    - User profile (TraderProfile, PsychProfile, RiskBudget, PerformanceStats)
+    - Relevant skills (matched from user message)
+    - Last 10 conversation memory entries
+    - Market snapshot (optional)
     """
     # 1. Budget check
     try:
@@ -178,26 +117,29 @@ async def ask_ai(
             detail=f"Daily AI call limit reached ({e.limit} calls). Resets at midnight UTC.",
         )
 
-    # 2. Gather context in parallel-ish
-    user_profile = await _fetch_user_profile(db, current_user.id)
-    skills_context, skills_loaded = _load_skills(payload.skills)
-    conversation_history = await fetch_conversation_history(current_user.id, db)
-    market_context = await fetch_market_context(payload.coin_ids)
+    # 2. Build context using ContextBuilder
+    context = await ContextBuilder.assemble(
+        user_id=current_user.id,
+        user_message=payload.message,
+        db=db,
+        include_market=payload.include_market,
+    )
 
-    # 3. Call AI
+    # 3. Extract loaded skills from context
+    skills_loaded = _extract_skills_from_context(context)
+
+    # 4. Call AI with assembled context
     brain = AIBrain()
     ai_text = await brain.ask(
         user_id=current_user.id,
         user_message=payload.message,
-        user_profile=user_profile,
-        market_context=market_context,
-        skills_context=skills_context,
-        conversation_history=conversation_history,
+        skills_context=context,
     )
 
-    # 4. Store exchange
+    # 5. Store exchange
     await _store_exchange(db, current_user.id, payload.message, ai_text)
 
+    # 6. Calculate budget
     from backend.core.config import settings as cfg
     budget_remaining = max(0, cfg.AI_CALL_BUDGET_PER_USER - calls_used - 1)
 
@@ -205,7 +147,7 @@ async def ask_ai(
         response=ai_text,
         skills_loaded=skills_loaded,
         budget_remaining=budget_remaining,
-        market_coins=payload.coin_ids,
+        market_coins=payload.coin_ids if payload.include_market else [],
     )
 
 
@@ -215,9 +157,10 @@ async def suggest_trades(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> SuggestResponse:
-    """Ask the AI to generate trade ideas based on the user's profile.
+    """Ask the AI to generate trade ideas based on user profile + loaded skills.
 
-    Same enhancements as /ask: budget, memory, market data.
+    Uses ContextBuilder to build context, then brain.suggest_trades()
+    for structured trade idea generation.
     """
     # 1. Budget check
     try:
@@ -228,26 +171,29 @@ async def suggest_trades(
             detail=f"Daily AI call limit reached ({e.limit} calls). Resets at midnight UTC.",
         )
 
-    # 2. Gather context
-    user_profile = await _fetch_user_profile(db, current_user.id)
-    skills_context, skills_loaded = _load_skills(payload.skills)
-    conversation_history = await fetch_conversation_history(current_user.id, db)
-    market_context = await fetch_market_context(payload.coin_ids)
+    # 2. Build context
+    context = await ContextBuilder.assemble(
+        user_id=current_user.id,
+        user_message="trade suggestions for current market conditions",
+        db=db,
+        include_market=payload.include_market,
+    )
 
-    # 3. Call AI
+    # 3. Extract loaded skills
+    skills_loaded = _extract_skills_from_context(context)
+
+    # 4. Call AI for trade suggestions
     brain = AIBrain()
     ai_text = await brain.suggest_trades(
         user_id=current_user.id,
-        user_profile=user_profile,
-        market_context=market_context,
-        skills_context=skills_context,
-        conversation_history=conversation_history,
+        skills_context=context,
     )
 
-    # 4. Store exchange
+    # 5. Store exchange
     synthetic_prompt = "[TRADE SUGGESTION REQUEST]"
     await _store_exchange(db, current_user.id, synthetic_prompt, ai_text)
 
+    # 6. Calculate budget
     from backend.core.config import settings as cfg
     budget_remaining = max(0, cfg.AI_CALL_BUDGET_PER_USER - calls_used - 1)
 
@@ -255,7 +201,7 @@ async def suggest_trades(
         ideas=ai_text,
         skills_loaded=skills_loaded,
         budget_remaining=budget_remaining,
-        market_coins=payload.coin_ids,
+        market_coins=payload.coin_ids if payload.include_market else [],
     )
 
 
