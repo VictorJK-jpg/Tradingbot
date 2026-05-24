@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile App Screens Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      background: #0a0a0f; 
+      color: #fff; 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+    }
+    h1 { 
+      text-align: center; 
+      margin-bottom: 40px;
+      color: #4ade80;
+      font-size: 28px;
+    }
+    h2 {
+      color: #4ade80;
+      margin: 30px 0 15px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 10px;
+    }
+    .screens-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+    .phone-frame {
+      background: linear-gradient(145deg, #1a1a24, #0f0f14);
+      border-radius: 40px;
+      padding: 12px;
+      width: 280px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+    .screen-header {
+      background: #0f172a;
+      border-radius: 30px 30px 0 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .screen-notch {
+      width: 80px;
+      height: 20px;
+      background: #000;
+      border-radius: 10px;
+    }
+    .screen-content {
+      background: #0f172a;
+      border-radius: 0 0 30px 30px;
+      min-height: 500px;
+      padding: 20px;
+      overflow: hidden;
+    }
+    .screen-title {
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .screen-subtitle {
+      color: #64748b;
+      font-size: 12px;
+      margin-bottom: 15px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card-subtitle {
+      color: #64748b;
+      font-size: 11px;
+    }
+    .stat-value {
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .stat-positive { color: #4ade80; }
+    .stat-negative { color: #ef4444; }
+    .badge {
+      display: inline-block;
+      background: #052e16;
+      color: #4ade80;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge-blue { background: #0c1929; color: #38bdf8; }
+    .badge-purple { background: #2e1065; color: #c084fc; }
+    .badge-yellow { background: #422006; color: #fbbf24; }
+    .btn {
+      background: #22c55e;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      background: #334155;
+    }
+    .row { display: flex; gap: 10px; margin-top: 10px; }
+    .col { flex: 1; }
+    .divider { border-bottom: 1px solid #334155; margin: 12px 0; }
+    .icon-circle {
+      width: 40px;
+      height: 40px;
+      background: #334155;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .text-sm { font-size: 12px; }
+    .text-xs { font-size: 10px; }
+    .mt-2 { margin-top: 8px; }
+    .mt-3 { margin-top: 12px; }
+    .mb-2 { margin-bottom: 8px; }
+    .mb-3 { margin-bottom: 12px; }
+    
+    /* Tab Bar */
+    .tab-bar {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid #1e293b;
+      margin-top: 15px;
+    }
+    .tab-item {
+      text-align: center;
+      color: #64748b;
+      font-size: 10px;
+    }
+    .tab-item.active { color: #4ade80; }
+    .tab-icon { font-size: 20px; }
+    
+    /* Chat bubbles */
+    .chat-bubble {
+      background: #1e293b;
+      border-radius: 16px 16px 16px 4px;
+      padding: 12px;
+      margin-bottom: 10px;
+      max-width: 85%;
+    }
+    .chat-bubble.user {
+      background: #16a34a;
+      margin-left: auto;
+      border-radius: 16px 16px 4px 16px;
+    }
+    
+    /* Input */
+    .input-field {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 10px 15px;
+      color: #fff;
+      width: 100%;
+      font-size: 12px;
+    }
+    
+    /* Toggle */
+    .toggle {
+      width: 44px;
+      height: 24px;
+      background: #334155;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+    .toggle.active { background: #4ade80; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: 0.2s;
+    }
+    .toggle.active::after { left: 22px; }
+    
+    /* Settings row */
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+    .settings-left { display: flex; align-items: center; gap: 12px; }
+    .settings-icon { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <h1>📱 Mobile App Screen Previews</h1>
+  
+  <h2>🔐 Auth Screens</h2>
+  <div class="screens-container">
+    
+    <!-- Login Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div style="padding-top: 40px;">
+          <div class="screen-title">Welcome back</div>
+          <div class="screen-subtitle">Sign in to your trading intelligence platform</div>
+          
+          <input class="input-field" placeholder="Email" style="margin-bottom: 12px;">
+          <input class="input-field" type="password" placeholder="Password" style="margin-bottom: 20px;">
+          
+          <button class="btn" style="width: 100%;">Sign In</button>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <span class="text-sm" style="color: #64748b;">Don't have an account? </span>
+            <span style="color: #4ade80; font-weight: 600;">Sign up</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Register Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div style="padding-top: 40px;">
+          <div class="screen-title">Create account</div>
+          <div class="screen-subtitle">Start your AI-powered trading journey</div>
+          
+          <input class="input-field" placeholder="Email" style="margin-bottom: 12px;">
+          <input class="input-field" type="password" placeholder="Password" style="margin-bottom: 12px;">
+          <input class="input-field" type="password" placeholder="Confirm Password" style="margin-bottom: 20px;">
+          
+          <button class="btn" style="width: 100%;">Get Started</button>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <span class="text-sm" style="color: #64748b;">Already have an account? </span>
+            <span style="color: #4ade80; font-weight: 600;">Sign in</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <h2>🏠 Main Tab Screens</h2>
+  <div class="screens-container">
+    
+    <!-- Home Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div class="flex-between mb-3">
+          <div>
+            <div class="screen-title">Dashboard</div>
+            <div class="screen-subtitle">Welcome back, trader</div>
+          </div>
+          <span class="badge">Live</span>
+        </div>
+        
+        <div class="card">
+          <div class="card-subtitle">Total Portfolio Value</div>
+          <div class="stat-value">$10,245.67</div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+            <span class="badge">+12.4%</span>
+            <span class="text-sm" style="color: #64748b;">24h: <span class="stat-positive">+$1,234</span></span>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="card col" style="padding: 12px;">
+            <div class="card-subtitle">Win Rate</div>
+            <div class="stat-value" style="font-size: 18px;">68%</div>
+          </div>
+          <div class="card col" style="padding: 12px;">
+            <div class="card-subtitle">AI Budget</div>
+            <div class="stat-value" style="font-size: 18px;">42/50</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="flex-between mb-2">
+            <span class="card-title">Recent AI Suggestions</span>
+            <span style="color: #4ade80; font-size: 11px;">View All</span>
+          </div>
+          <div style="background: #334155; border-radius: 12px; padding: 12px;">
+            <div class="flex-between mb-2">
+              <span style="font-weight: 600;">BTC Long Opportunity</span>
+              <span class="badge">Active</span>
+            </div>
+            <div class="text-xs" style="color: #64748b;">Entry: $64,500 | Stop: $62,000</div>
+            <div class="row mt-2">
+              <button class="btn" style="flex: 1; padding: 8px;">Approve</button>
+              <button class="btn btn-secondary" style="flex: 1; padding: 8px; margin-left: 8px;">Reject</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card" style="background: linear-gradient(135deg, #052e16, #1e293b);">
+          <div class="flex-between mb-2">
+            <span class="card-title">📊 Weekly Outlook</span>
+            <span class="text-xs" style="color: #64748b;">May 20-26</span>
+          </div>
+          <span class="badge-yellow" style="margin-bottom: 8px;">Trend: Bullish</span>
+          <div class="text-xs" style="color: #94a3b8;">DXY weakening, ETF flows positive...</div>
+        </div>
+        
+        <div class="tab-bar">
+          <div class="tab-item active"><div class="tab-icon">🏠</div>Home</div>
+          <div class="tab-item"><div class="tab-icon">🤖</div>Chat</div>
+          <div class="tab-item"><div class="tab-icon">📊</div>Portfolio</div>
+          <div class="tab-item"><div class="tab-icon">📈</div>Markets</div>
+          <div class="tab-item"><div class="tab-icon">⚙️</div>Settings</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI Chat Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div class="flex-between mb-3">
+          <div>
+            <div class="screen-title">AI Trading Assistant</div>
+            <div class="screen-subtitle">Powered by advanced market intelligence</div>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <span class="badge-blue">STRAT</span>
+            <span class="badge">RISK</span>
+          </div>
+        </div>
+        
+        <div style="height: 320px; overflow-y: auto;">
+          <div class="chat-bubble">
+            <div class="text-sm">👋 Welcome to your AI trading assistant! Ask me about market analysis, trade ideas, or risk management strategies.</div>
+          </div>
+          
+          <div class="chat-bubble user">
+            <div class="text-sm" style="color: #fff;">Should I long BTC with proper risk?</div>
+          </div>
+          
+          <div class="chat-bubble">
+            <div class="text-sm">Based on current market conditions and your risk profile, BTC shows a moderate bullish setup. Here's my analysis...</div>
+            <div style="display: flex; flex-wrap: wrap; margin-top: 8px;">
+              <span class="badge" style="margin-right: 4px; margin-bottom: 4px;">strategies/trend_following</span>
+              <span class="badge-blue" style="margin-right: 4px; margin-bottom: 4px;">risk_management/position_sizing</span>
+            </div>
+            <div class="text-xs" style="color: #64748b; margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
+              Budget remaining: 49/50
+            </div>
+          </div>
+        </div>
+        
+        <div class="row" style="margin: 10px 0;">
+          <input class="input-field" placeholder="Ask about trades..." style="flex: 1;">
+          <button class="btn" style="margin-left: 8px;">➤</button>
+        </div>
+        
+        <div class="tab-bar">
+          <div class="tab-item"><div class="tab-icon">🏠</div>Home</div>
+          <div class="tab-item active"><div class="tab-icon">🤖</div>Chat</div>
+          <div class="tab-item"><div class="tab-icon">📊</div>Portfolio</div>
+          <div class="tab-item"><div class="tab-icon">📈</div>Markets</div>
+          <div class="tab-item"><div class="tab-icon">⚙️</div>Settings</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Portfolio Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div class="flex-between mb-3">
+          <div>
+            <div class="screen-title">Portfolio</div>
+            <div class="screen-subtitle">Your trading dashboard</div>
+          </div>
+          <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 10px;">Export</button>
+        </div>
+        
+        <div class="card">
+          <div class="flex-between mb-2">
+            <div>
+              <div class="card-subtitle">Total Balance</div>
+              <div class="stat-value">$10,245.67</div>
+            </div>
+            <span class="badge">+12.4%</span>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="card-subtitle">Available</div>
+              <div style="color: #fff; font-weight: 600;">$8,245.67</div>
+            </div>
+            <div class="col">
+              <div class="card-subtitle">24h P&L</div>
+              <div class="stat-positive" style="font-weight: 600;">+$1,234.00</div>
+            </div>
+          </div>
+          <div class="row mt-3" style="padding-top: 12px; border-top: 1px solid #334155;">
+            <button class="btn" style="flex: 1; margin-right: 4px;">Deposit</button>
+            <button class="btn btn-secondary" style="flex: 1; margin-right: 4px;">Withdraw</button>
+            <button class="btn btn-secondary" style="flex: 1;">Transfer</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="flex-between mb-2">
+            <span class="card-title">Open Positions</span>
+            <span style="color: #4ade80; font-size: 11px;">View All</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #334155;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="icon-circle">BTC</div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">BTC/USDT</div>
+                <div class="text-xs" style="color: #64748b;">Long • 5x</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="stat-positive" style="font-weight: 600;">+$420.50</div>
+              <div class="text-xs stat-positive">+2.1%</div>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="icon-circle">ETH</div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">ETH/USDT</div>
+                <div class="text-xs" style="color: #64748b;">Long • 3x</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="stat-negative" style="font-weight: 600;">-$85.20</div>
+              <div class="text-xs stat-negative">-0.8%</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-bar">
+          <div class="tab-item"><div class="tab-icon">🏠</div>Home</div>
+          <div class="tab-item"><div class="tab-icon">🤖</div>Chat</div>
+          <div class="tab-item active"><div class="tab-icon">📊</div>Portfolio</div>
+          <div class="tab-item"><div class="tab-icon">📈</div>Markets</div>
+          <div class="tab-item"><div class="tab-icon">⚙️</div>Settings</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Markets Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div class="screen-title">Markets</div>
+        <div class="screen-subtitle">Real-time crypto prices</div>
+        
+        <div class="card">
+          <div class="card-title mb-3">Fear & Greed Index</div>
+          <div style="text-align: center;">
+            <div style="width: 80px; height: 80px; border: 3px solid #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+              <span style="font-size: 28px; font-weight: bold; color: #4ade80;">65</span>
+            </div>
+            <span class="badge">Greed</span>
+            <div class="text-xs" style="color: #64748b; margin-top: 10px;">Updated: 5 min ago</div>
+          </div>
+          <div style="margin-top: 15px;">
+            <div style="height: 6px; background: linear-gradient(to right, #ef4444, #fbbf24, #4ade80); border-radius: 3px;"></div>
+            <div class="flex-between mt-1">
+              <span class="text-xs" style="color: #64748b;">Extreme Fear</span>
+              <span class="text-xs" style="color: #64748b;">Neutral</span>
+              <span class="text-xs" style="color: #64748b;">Greed</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="flex-between mb-3">
+            <span class="card-title">Watchlist</span>
+            <span style="color: #4ade80; font-size: 11px;">+ Add</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155;">
+            <span class="text-xs" style="color: #64748b; width: 50px;">Asset</span>
+            <span class="text-xs" style="color: #64748b;">Price</span>
+            <span class="text-xs" style="color: #64748b; text-align: right;">24h</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="icon-circle" style="width: 30px; height: 30px; font-size: 10px;">B</div>
+              <span style="font-weight: 600;">BTC</span>
+            </div>
+            <span>$64,234.56</span>
+            <span class="stat-positive">+2.34%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="icon-circle" style="width: 30px; height: 30px; font-size: 10px;">E</div>
+              <span style="font-weight: 600;">ETH</span>
+            </div>
+            <span>$3,456.78</span>
+            <span class="stat-negative">-1.23%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="icon-circle" style="width: 30px; height: 30px; font-size: 10px;">S</div>
+              <span style="font-weight: 600;">SOL</span>
+            </div>
+            <span>$145.23</span>
+            <span class="stat-positive">+5.67%</span>
+          </div>
+        </div>
+        
+        <div class="tab-bar">
+          <div class="tab-item"><div class="tab-icon">🏠</div>Home</div>
+          <div class="tab-item"><div class="tab-icon">🤖</div>Chat</div>
+          <div class="tab-item"><div class="tab-icon">📊</div>Portfolio</div>
+          <div class="tab-item active"><div class="tab-icon">📈</div>Markets</div>
+          <div class="tab-item"><div class="tab-icon">⚙️</div>Settings</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Settings Screen -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content" style="overflow-y: auto;">
+        <div class="screen-title">Settings</div>
+        <div class="screen-subtitle">Manage your account and preferences</div>
+        
+        <div class="text-xs" style="color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px;">Account</div>
+        <div class="card" style="padding: 0;">
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">👤</span>
+              <div>
+                <div style="font-weight: 600;">Edit Profile</div>
+                <div class="text-xs" style="color: #64748b;">Name, email, and avatar</div>
+              </div>
+            </div>
+            <span style="color: #64748b;">›</span>
+          </div>
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">🔑</span>
+              <div>
+                <div style="font-weight: 600;">Change Password</div>
+                <div class="text-xs" style="color: #64748b;">Update your security</div>
+              </div>
+            </div>
+            <span style="color: #64748b;">›</span>
+          </div>
+        </div>
+        
+        <div class="text-xs" style="color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px;">Trading</div>
+        <div class="card" style="padding: 0;">
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">📊</span>
+              <div>
+                <div style="font-weight: 600;">Risk Budget</div>
+                <div class="text-xs" style="color: #64748b;">Max risk per trade</div>
+              </div>
+            </div>
+            <span style="color: #64748b;">›</span>
+          </div>
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">🔗</span>
+              <div>
+                <div style="font-weight: 600;">Exchange Connections</div>
+                <div class="text-xs" style="color: #64748b;">Manage API keys</div>
+              </div>
+            </div>
+            <span style="color: #64748b;">›</span>
+          </div>
+        </div>
+        
+        <div class="text-xs" style="color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px;">Notifications</div>
+        <div class="card" style="padding: 0;">
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">🔔</span>
+              <span style="font-weight: 600;">Price Alerts</span>
+            </div>
+            <div class="toggle active"></div>
+          </div>
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">🤖</span>
+              <span style="font-weight: 600;">AI Suggestions</span>
+            </div>
+            <div class="toggle active"></div>
+          </div>
+          <div class="settings-row" style="padding: 12px;">
+            <div class="settings-left">
+              <span class="settings-icon">📰</span>
+              <span style="font-weight: 600;">Market News</span>
+            </div>
+            <div class="toggle"></div>
+          </div>
+        </div>
+        
+        <button style="width: 100%; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 12px; border-radius: 12px; margin-top: 20px; font-weight: 600;">
+          Sign Out
+        </button>
+        
+        <div style="text-align: center; margin-top: 20px; padding-bottom: 20px;">
+          <div class="text-xs" style="color: #64748b;">Crypto Platform v1.0.0</div>
+        </div>
+        
+        <div class="tab-bar" style="margin-top: 10px;">
+          <div class="tab-item"><div class="tab-icon">🏠</div>Home</div>
+          <div class="tab-item"><div class="tab-icon">🤖</div>Chat</div>
+          <div class="tab-item"><div class="tab-icon">📊</div>Portfolio</div>
+          <div class="tab-item"><div class="tab-icon">📈</div>Markets</div>
+          <div class="tab-item active"><div class="tab-icon">⚙️</div>Settings</div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <h2>📱 Onboarding Preview</h2>
+  <div class="screens-container">
+    
+    <!-- Onboarding Step -->
+    <div class="phone-frame">
+      <div class="screen-header"><div class="screen-notch"></div></div>
+      <div class="screen-content">
+        <div style="padding-top: 30px; text-align: center;">
+          <div class="icon-circle" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 20px;">🤖</div>
+          
+          <div class="screen-title" style="font-size: 18px;">Name Your Trading Bot</div>
+          <div class="screen-subtitle">Give your AI assistant a unique identity</div>
+          
+          <input class="input-field" placeholder="e.g., CryptoSensei" style="margin: 20px 0;">
+          
+          <div style="margin-top: 30px;">
+            <div style="display: flex; justify-content: center; gap: 8px;">
+              <div style="width: 8px; height: 8px; background: #4ade80; border-radius: 50%;"></div>
+              <div style="width: 8px; height: 8px; background: #334155; border-radius: 50%;"></div>
+              <div style="width: 8px; height: 8px; background: #334155; border-radius: 50%;"></div>
+              <div style="width: 8px; height: 8px; background: #334155; border-radius: 50%;"></div>
+              <div style="width: 8px; height: 8px; background: #334155; border-radius: 50%;"></div>
+              <div style="width: 8px; height: 8px; background: #334155; border-radius: 50%;"></div>
+            </div>
+            <div class="text-xs" style="color: #64748b; margin-top: 8px;">Step 1 of 9</div>
+          </div>
+          
+          <button class="btn" style="width: 100%; margin-top: 30px;">Continue</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <div style="text-align: center; margin: 50px 0; padding: 30px; background: #1e293b; border-radius: 20px;">
+    <h2 style="color: #4ade80; margin-bottom: 15px;">🚀 Dark Crypto-Native Theme</h2>
+    <p style="color: #94a3b8; font-size: 14px; max-width: 600px; margin: 0 auto;">
+      Professional trading interface with brand green accents, dark backgrounds (#0f172a), 
+      and crypto-native visual elements. Designed for 24/7 market monitoring.
+    </p>
+  </div>
+</body>
+</html>
