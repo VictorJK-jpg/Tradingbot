@@ -130,40 +130,31 @@ class SkillsEngine:
     # ------------------------------------------------------------------
     @staticmethod
     def get_available_skills() -> list[dict]:
-        """Return metadata for all skills without loading full content.
+        """Return metadata for all skills without loading content.
 
-        Returns list of: {
-            "category": str,
-            "name": str,
-            "title": str,
-            "description": str,
-            "tags": list[str],
-        }
+        Returns: list of {"category": str, "name": str, "title": str,
+                         "description": str, "tags": list[str]}
         """
-        skills: list[dict] = []
+        results: list[dict] = []
         for category in sorted(_VALID_CATEGORIES):
             folder = _SKILLS_BASE / category
             if not folder.exists():
                 continue
-            for skill_folder in folder.iterdir():
-                if not skill_folder.is_dir():
+            for skill_dir in sorted(folder.iterdir()):
+                if not skill_dir.is_dir():
                     continue
-                skill_file = skill_folder / "SKILL.md"
-                if not skill_file.exists():
+                skill_path = skill_dir / "SKILL.md"
+                if not skill_path.exists():
                     continue
-                try:
-                    meta, _ = _parse_skill(skill_file)
-                    skills.append({
-                        "category": category,
-                        "name": skill_folder.name,
-                        "title": meta.get("title", skill_folder.name.replace("_", " ").title()),
-                        "description": meta.get("description", ""),
-                        "tags": meta.get("tags", []),
-                    })
-                except Exception:
-                    # Skip malformed skill files
-                    continue
-        return skills
+                meta, _ = _parse_skill(skill_path)
+                results.append({
+                    "category": category,
+                    "name": skill_dir.name,
+                    "title": meta.get("title", skill_dir.name.replace("_", " ").title()),
+                    "description": meta.get("description", ""),
+                    "tags": meta.get("tags", []),
+                })
+        return results
 
     # ------------------------------------------------------------------
     # Intelligent matching
