@@ -20,6 +20,8 @@ if _is_sqlite:
     )
 else:
     _engine_kwargs.update(pool_size=10, max_overflow=20)
+    # Fix for Supabase connection pooler (prepared statements not supported)
+    _engine_kwargs["connect_args"] = {"statement_cache_size": 0}
 
 engine = create_async_engine(settings.DATABASE_URL, **_engine_kwargs)
 
